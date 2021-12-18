@@ -1,0 +1,245 @@
+version '1.0'
+
+apply plugin: 'maven'
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'eclipse'
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+[compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
+
+// In this section you declare where to find the dependencies of your project
+repositories {
+
+    maven {
+        url "http://maven.aliyun.com/nexus/content/groups/public/"
+    }
+    mavenCentral()
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+    maven { url 'https://dl.bintray.com/ethereum/maven/' }
+    maven { url 'http://repo.typesafe.com/typesafe/maven-releases/' }
+    mavenLocal()
+
+}
+
+def spring_version="4.3.29.RELEASE"
+List spring =[
+    "org.springframework:spring-core:$spring_version",
+    "org.springframework:spring-beans:$spring_version",
+    "org.springframework:spring-context:$spring_version",
+    "org.springframework:spring-tx:$spring_version",
+    "org.springframework:spring-web:$spring_version",
+    "org.springframework:spring-webmvc:$spring_version",
+    "org.springframework:spring-jdbc:$spring_version",
+    // cover old version
+    "org.springframework:spring-aspects:$spring_version",
+    "org.springframework:spring-messaging:$spring_version",
+    "org.springframework:spring-orm:$spring_version",
+    "org.springframework:spring-test:$spring_version"
+
+]
+
+def spring_boot_version="1.5.22.RELEASE"
+List spring_boot =[
+    "org.springframework.boot:spring-boot-starter-web:$spring_boot_version",
+    "org.springframework.boot:spring-boot-autoconfigure:$spring_boot_version",
+    "org.springframework.boot:spring-boot-configuration-processor:$spring_boot_version",
+    "org.springframework.boot:spring-boot-starter-data-jpa:$spring_boot_version",
+    "org.springframework.boot:spring-boot-starter-amqp:$spring_boot_version"
+]
+
+
+List swagger = [
+    'io.springfox:springfox-swagger2:2.8.0',
+    'io.springfox:springfox-swagger-ui:2.8.0'
+]
+
+
+def log4j_version="2.15.0"
+List logger = [
+    "org.apache.logging.log4j:log4j-api:$log4j_version",
+    "org.apache.logging.log4j:log4j-core:$log4j_version",
+    "org.apache.logging.log4j:log4j-slf4j-impl:$log4j_version",
+    "org.apache.logging.log4j:log4j-web:$log4j_version"
+]
+
+List jaxb = [
+     "javax.xml.bind:jaxb-api:2.3.0",
+     "com.sun.xml.bind:jaxb-impl:2.3.0",
+     "com.sun.xml.bind:jaxb-core:2.3.0",
+     "javax.activation:activation:1.1.1"
+]
+
+def jackson_version = "2.11.4"
+List jackson = [
+    "com.fasterxml.jackson.core:jackson-annotations:$jackson_version",
+    "com.fasterxml.jackson.core:jackson-core:$jackson_version",
+    "com.fasterxml.jackson.core:jackson-databind:$jackson_version",
+    "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jackson_version"
+]
+
+// cover old version
+def tomcat_version = "8.5.56"
+List tomcat = [
+    "org.apache.tomcat.embed:tomcat-embed-core:$tomcat_version",
+    "org.apache.tomcat.embed:tomcat-embed-el:$tomcat_version",
+    "org.apache.tomcat.embed:tomcat-embed-websocket:$tomcat_version",
+    "org.apache.tomcat:tomcat-jdbc:$tomcat_version",
+    "org.apache.tomcat:tomcat-juli:$tomcat_version"
+]
+
+List scaffold = [
+    'com.webank.webase:solscaffold:1.0.2',
+    'com.webank:SmartDev-Scaffold:1.0.0.1',
+    'com.webank:solc-gradle-plugin:1.0.1'
+]
+
+dependencies {
+    compile spring,spring_boot,swagger,logger,jaxb,jackson,tomcat,scaffold
+    compile 'org.fisco-bcos.java-sdk:fisco-bcos-java-sdk:2.7.2'
+    // support guomi/ecdsa same time, support solcJ-0.5.2
+    compile 'org.fisco-bcos:solcJ:0.4.25-rc1'
+    compile 'com.h2database:h2:1.4.200'
+    compile 'org.fusesource:sigar:1.6.4'
+    annotationProcessor 'org.projectlombok:lombok:1.18.6'
+    compile 'org.projectlombok:lombok:1.18.6'
+    compile 'com.github.jsqlparser:jsqlparser:2.0'
+    compile 'org.apache.commons:commons-lang3:3.8.1'
+    compile 'org.slf4j:jcl-over-slf4j:1.7.30'
+    // cover low version guava
+    compile 'com.google.guava:guava:29.0-jre'
+    testCompile('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
+    testCompile 'junit:junit:4.12',
+                'org.springframework.boot:spring-boot-starter-test:1.5.9.RELEASE',
+                'com.github.macdao:moscow:0.1.0',
+                'com.squareup.okhttp3:okhttp:3.1.2'
+                'org.springframework.amqp:spring-rabbit-test'
+
+}
+
+configurations {
+    all*.exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    all*.exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+    all*.exclude group: 'log4j', module: 'log4j'
+    all*.exclude group: 'com.github.jnr', module: 'jnr-posix'
+    all*.exclude group: 'com.mchange', module: '*'
+}
+
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+}
+
+clean {
+    delete 'dist'
+    delete 'build'
+    delete 'log'
+}
+
+
+jar {
+    destinationDir file('dist/apps')
+    archiveName project.name + '.jar'
+    exclude '**/*.xml'
+    exclude '**/*.properties'
+
+    doLast {
+        copy {
+            from file('src/main/resources/')
+            into 'dist/conf_template'
+            exclude '**/static'
+        }
+        downloadJs()
+        copy {
+            from file('gradle')
+            into 'dist/gradle'
+        }
+        copy {
+            from file('src/main/resources/static')
+            into 'dist/static'
+        }
+        copy {
+            from file('report/')
+            into 'dist/report'
+        }
+        copy {
+            from configurations.runtime
+            into 'dist/lib'
+        }
+        copy {
+            from file('.').listFiles().findAll{File f -> (f.name.endsWith('.sh') || f.name.endsWith('.env'))}
+            into 'dist'
+        }
+        copy {
+            from file('release_note.txt')
+            into 'dist'
+        }
+    }
+}
+
+// download js file
+def downloadJs() {
+    String solc04Path = "src"+ File.separator + "main"+ File.separator + "resources"+ File.separator + "static"+ File.separator + "static"+ File.separator + "js"+ File.separator + "v0.4.25.js";
+    String solc04gmPath = "src"+ File.separator + "main"+ File.separator + "resources"+ File.separator + "static"+ File.separator + "static"+ File.separator + "js"+ File.separator + "v0.4.25-gm.js";
+    String solc05Path = "src"+ File.separator + "main"+ File.separator + "resources"+ File.separator + "static"+ File.separator + "static"+ File.separator + "js"+ File.separator + "v0.5.2.js";
+    String solc05gmPath = "src"+ File.separator + "main"+ File.separator + "resources"+ File.separator + "static"+ File.separator + "static"+ File.separator + "js"+ File.separator + "v0.5.2-gm.js";
+    String solc06Path = "src"+ File.separator + "main"+ File.separator + "resources"+ File.separator + "static"+ File.separator + "static"+ File.separator + "js"+ File.separator + "v0.6.10.js";
+    String solc06gmPath = "src"+ File.separator + "main"+ File.separator + "resources"+ File.separator + "static"+ File.separator + "static"+ File.separator + "js"+ File.separator + "v0.6.10-gm.js";
+    File solc04 = new File(solc04Path);
+    File solc04gm = new File(solc04gmPath);
+    File solc05 = new File(solc05Path);
+    File solc05gm = new File(solc05gmPath);
+    File solc06 = new File(solc06Path);
+    File solc06gm = new File(solc06gmPath);
+    if (!solc04.exists()) {
+        exec {
+            ExecSpec execSpec ->
+                executable 'curl'
+                args '-#L', "https://osp-1257653870.cos.ap-guangzhou.myqcloud.com/WeBASE/download/solidity/wasm/v0.4.25.js",
+                        "-o", solc04Path
+        }
+    }
+    if (!solc04gm.exists()) {
+        exec {
+            ExecSpec execSpec ->
+                executable 'curl'
+                args '-#L', "https://osp-1257653870.cos.ap-guangzhou.myqcloud.com/WeBASE/download/solidity/wasm/v0.4.25-gm.js",
+                        "-o", solc04gmPath
+        }
+    }
+    if (!solc05.exists()) {
+        exec {
+            ExecSpec execSpec ->
+                executable 'curl'
+                args '-#L', "https://osp-1257653870.cos.ap-guangzhou.myqcloud.com/WeBASE/download/solidity/wasm/v0.5.2.js",
+                        "-o", solc05Path
+        }
+    }
+    if (!solc05gm.exists()) {
+        exec {
+            ExecSpec execSpec ->
+                executable 'curl'
+                args '-#L', "https://osp-1257653870.cos.ap-guangzhou.myqcloud.com/WeBASE/download/solidity/wasm/v0.5.2-gm.js",
+                        "-o", solc05gmPath
+        }
+    }
+    if (!solc06.exists()) {
+        exec {
+            ExecSpec execSpec ->
+                executable 'curl'
+                args '-#L', "https://osp-1257653870.cos.ap-guangzhou.myqcloud.com/WeBASE/download/solidity/wasm/v0.6.10.js",
+                        "-o", solc06Path
+        }
+    }
+    if (!solc06gm.exists()) {
+        exec {
+            ExecSpec execSpec ->
+                executable 'curl'
+                args '-#L', "https://osp-1257653870.cos.ap-guangzhou.myqcloud.com/WeBASE/download/solidity/wasm/v0.6.10-gm.js",
+                        "-o", solc06gmPath
+        }
+    }
+}
+
