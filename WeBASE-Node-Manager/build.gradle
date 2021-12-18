@@ -1,0 +1,199 @@
+group = 'com.webank.webase.node.mgr'
+version = '1.0.0-SNAPSHOT'
+
+apply plugin: 'maven'
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'eclipse'
+
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+[compileJava, compileTestJava, javadoc]*.options*.encoding = 'UTF-8'
+
+// In this section you declare where to find the dependencies of your project
+repositories {
+    maven {url "http://maven.aliyun.com/nexus/content/groups/public/"}
+    mavenCentral()
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+    maven { url 'https://dl.bintray.com/ethereum/maven/' }
+    mavenLocal()
+}
+
+def springboot_version="2.1.18.RELEASE"
+List springboot = [
+     "org.springframework.boot:spring-boot-starter-web:$springboot_version",
+     "org.springframework.boot:spring-boot-starter-security:$springboot_version",
+     "org.springframework.boot:spring-boot-starter-mail:$springboot_version",
+     "org.springframework.boot:spring-boot-starter-thymeleaf:$springboot_version",
+     "org.springframework.boot:spring-boot-starter-aop:$springboot_version"
+]
+
+// cover old version
+def spring_version="5.2.15.RELEASE"
+List spring = [
+    "org.springframework:spring-core:$spring_version",
+    "org.springframework:spring-aop:$spring_version",
+    "org.springframework:spring-beans:$spring_version",
+    "org.springframework:spring-context:$spring_version",
+    "org.springframework:spring-expression:$spring_version",
+    "org.springframework:spring-jcl:$spring_version",
+    "org.springframework:spring-jdbc:$spring_version",
+    "org.springframework:spring-tx:$spring_version",
+    "org.springframework:spring-test:$spring_version",
+    "org.springframework:spring-web:$spring_version"
+]
+// cover old version
+def spring_security_version="5.4.4"
+List spring_security = [
+    "org.springframework.security:spring-security-core:$spring_security_version",
+    "org.springframework.security:spring-security-web:$spring_security_version",
+    "org.springframework.security:spring-security-config:$spring_security_version",
+]
+
+
+List jaxb = [
+     "javax.xml.bind:jaxb-api:2.3.0",
+     "com.sun.xml.bind:jaxb-impl:2.3.0",
+     "com.sun.xml.bind:jaxb-core:2.3.0",
+     "javax.activation:activation:1.1.1"
+]
+
+List lombok = [
+    "org.projectlombok:lombok:1.18.12"
+]
+
+def jackson_version = "2.11.4"
+List jackson = [
+    "com.fasterxml.jackson.core:jackson-databind:$jackson_version",
+    "com.fasterxml.jackson.core:jackson-annotations:$jackson_version",
+    "com.fasterxml.jackson.core:jackson-core:$jackson_version",
+    "com.fasterxml.jackson.module:jackson-module-parameter-names:$jackson_version",
+    "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:$jackson_version",
+    "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:$jackson_version",
+]
+
+List test = [
+    "org.springframework.boot:spring-boot-starter-test:$springboot_version"
+]
+
+def log4j_version="2.15.0"
+List log4j = [
+    "org.apache.logging.log4j:log4j-api:$log4j_version",
+    "org.apache.logging.log4j:log4j-core:$log4j_version",
+    "org.apache.logging.log4j:log4j-slf4j-impl:$log4j_version",
+    "org.apache.logging.log4j:log4j-web:$log4j_version"
+]
+
+List mbg = [
+    'org.mybatis.generator:mybatis-generator-core:1.3.2',
+    'tk.mybatis:mapper:3.3.2',
+    'com.github.yuanmomo:mybatis-generator-plugin:1.0.9'
+]
+
+List scaffold = [
+    'com.webank.webase:solscaffold:1.0.2',
+    'com.webank:SmartDev-Scaffold:1.0.0.1',
+    'com.webank:solc-gradle-plugin:1.0.1'
+]
+
+List swagger = [
+    'io.springfox:springfox-swagger2:2.8.0',
+    'io.springfox:springfox-swagger-ui:2.8.0'
+]
+
+dependencies {
+    compile springboot,spring,spring_security,jaxb,jackson,log4j,scaffold,swagger
+    compile "org.fisco-bcos.java-sdk:fisco-bcos-java-sdk:2.7.2"
+    compile "org.mybatis.spring.boot:mybatis-spring-boot-starter:2.1.0"
+    compile "org.apache.commons:commons-lang3:3.8.1"
+    compile 'org.apache.commons:commons-collections4:4.4'
+    compile "mysql:mysql-connector-java:8.0.22"
+    compile "com.zaxxer:HikariCP:3.2.0"
+    compile "com.github.sgroschupf:zkclient:0.1"
+    compile 'org.bouncycastle:bcprov-jdk15on:1.67'
+    // cover old version
+    compile 'com.google.guava:guava:28.2-jre'
+    compile 'org.slf4j:jcl-over-slf4j:1.7.30'
+
+    compile 'com.jcraft:jsch:0.1.55'
+    compile 'org.ini4j:ini4j:0.5.4'
+    compile ('com.github.docker-java:docker-java:3.2.1') {
+        exclude group: 'io.netty'
+        exclude group: 'org.bouncycastle'
+    }
+    compile 'org.thymeleaf:thymeleaf:3.0.11.RELEASE'
+    compile 'ognl:ognl:3.2.14'
+
+    testCompile test,mbg
+
+    compileOnly lombok
+    annotationProcessor lombok
+
+    testCompileOnly lombok
+    testAnnotationProcessor lombok
+}
+
+configurations {
+    all*.exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    all*.exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+    all*.exclude group: 'log4j', module: 'log4j'
+    all*.exclude group: 'org.ow2.asm', module: 'asm'
+    all*.exclude group: 'jline', module: 'jline'
+    all*.exclude group: 'com.google.protobuf', module: 'protobuf-java'
+    all*.exclude group: 'javax.annotation', module: 'javax.annotation-api'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src/main/java'
+        }
+        resources {
+            srcDir 'src/main/resources'
+        }
+    }
+}
+
+clean {
+    delete 'dist'
+    delete 'build'
+    delete 'log'
+}
+
+
+jar {
+    destinationDir file('dist/apps')
+    archiveName project.name + '.jar'
+    exclude '**/*.xml'
+    exclude '**/*.yml'
+    exclude '**/*.properties'
+
+    doLast {
+        copy {
+            from file('src/main/resources/')
+            into 'dist/conf_template'
+        }
+        copy {
+            from file('gradle')
+            into 'dist/gradle'
+        }
+        copy {
+            from file('script/')
+            into 'dist/script'
+        }
+        copy {
+            from configurations.runtime
+            into 'dist/lib'
+        }
+        copy {
+            from file('.').listFiles().findAll{File f -> (f.name.endsWith('.sh') || f.name.endsWith('.env'))}
+            into 'dist'
+        }
+        copy {
+            from file('release_note.txt')
+            into 'dist'
+        }
+    }
+}
